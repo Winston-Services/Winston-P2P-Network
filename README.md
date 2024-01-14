@@ -6,21 +6,6 @@ Winston Peer to Peer Network
 
 Winston Peer to Peer Network is a Websocket driven peer to peer network that utilizes client plugins to create an interactive environment.
 
-## Core PlugIns
-
-### Core PlugIn Features
-
-Slash Command Interpreter.
-
-- /test Send a network test.
-- /send Send a message on the network.
-  Standard Input Interpreter
-- test Run a local Interpreter test.
-
-## Client PlugIns
-
-Client plugin's allow users to build and use modules to build upon the core of the network.
-
 ## General Setup Instructions
 
 The Winston P2P Client application is used to create a client or server connection to the network. Users have the option of running a server node, or client. Server nodes host modules that users can interact with while clients utilize plugins that interaction with the nodes.
@@ -40,6 +25,21 @@ Start a Client and connect to a host and port
 
 Start a Client & Server on a specific host and port
 `app.exe server=true host=localhost port=6969`
+
+## Core PlugIns
+
+### Core PlugIn Features
+
+Slash Command Interpreter.
+
+- /test Send a network test.
+- /send Send a message on the network.
+  Standard Input Interpreter
+- test Run a local Interpreter test.
+
+## Client PlugIns
+
+Client plugin's allow users to build and use modules to build upon the core of the network.
 
 ## PlugIn Setup Instructions
 

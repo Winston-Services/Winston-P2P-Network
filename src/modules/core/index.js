@@ -11,6 +11,14 @@ async function handleSlashCommand(data, client, clients) {
     });
     return;
   }
+  if (data.startsWith("/send")) {
+    let content = data.substring("/send ".length);
+    client.send(JSON.stringify({ action: "message", content }));
+    clients.forEach((_client) => {
+      if (_client.id !== _client.id)
+        _client.send(JSON.stringify({ action: "message", content }));
+    });
+  }
   function connect(data, client, clients) {
     let commandStr = data.substring("/connect ".length);
     let [host, port] = commandStr.split(" ");
@@ -39,8 +47,11 @@ export async function exec(clients, client, input) {
 
   try {
     let cmd = JSON.parse(input);
-    if (cmd.action === "test") {
+    if (cmd.hasOwnProperty("action") && cmd.action === "test") {
       console.log("Test was successful.");
+    }
+    if (cmd.hasOwnProperty("action") && cmd.action === "message") {
+      console.log(cmd.content);
     }
   } catch (error) {}
   //console.log(clients, client, input.toString());

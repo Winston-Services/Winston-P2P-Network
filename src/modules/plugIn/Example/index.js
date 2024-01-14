@@ -1,4 +1,4 @@
-import { formatText, textColors } from "../../../client";
+import { formatText, textColors } from "../../../client.js";
 export const name = "Example";
 export const Description = "Example";
 export const command = (answer) => {

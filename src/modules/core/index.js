@@ -1,4 +1,4 @@
-import { textColors, formatText } from "../../client.js";
+import { textColors, formatText, ask, loadedModules } from "../../client.js";
 
 async function handleSlashCommand(data, client, clients) {
   //load slashcommands
@@ -18,6 +18,19 @@ async function handleSlashCommand(data, client, clients) {
       if (_client.id !== _client.id)
         _client.send(JSON.stringify({ action: "message", content }));
     });
+  }
+  if (data.startsWith("/plugins")) {
+    console.log("** Winston P2P Core Plug-Ins **");
+    if (loadedModules.hasOwnProperty("core")) {
+      console.log("Winston P2P Core Installed : ✅");
+    }
+    if (loadedModules.hasOwnProperty("plugIns")) {
+      console.log(
+        "Winston P2P Client Plug-Ins : %d",
+        Object.keys(loadedModules.plugIns).length
+      );
+    }
+    // console.log(loadedModules);
   }
   function connect(data, client, clients) {
     let commandStr = data.substring("/connect ".length);

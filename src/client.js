@@ -108,15 +108,19 @@ export function startClient(url = "ws://localhost:6969", proxy = false) {
             formatText("Loading Winston Client PlugIn : %s", textColors.Green),
             formatText(plugInDirContents[fileIndex], textColors.White)
           );
+          console.log("Adding Plug-In : %s", plugInDirContents[fileIndex]);
           const plugIn = await import(
             `./modules/plugIn/${plugInDirContents[fileIndex]}/index.js`
           );
+          console.log("Plug-In Loaded", plugIn);
           loadedModules.plugIns[plugInDirContents[fileIndex]] = plugIn;
           console.log(
             formatText("Winston Client PlugIn Loaded: %s", textColors.Cyan),
             formatText(plugInDirContents[fileIndex], textColors.Green)
           );
-        } catch (error) {}
+        } catch (error) {
+          console.log(error);
+        }
       }
       console.log(formatText("Winston Client PlugIns Loaded", textColors.Cyan));
     }

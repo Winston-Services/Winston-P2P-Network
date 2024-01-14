@@ -8,7 +8,7 @@ Winston Peer to Peer Network is a Websocket driven peer to peer network that uti
 
 ## General Setup Instructions
 
-The Winston P2P Client application is used to create a client or server connection to the network. Users have the option of running a server node, or client. Server nodes host modules that users can interact with while clients utilize plugins that interaction with the nodes.
+The Winston P2P Client application is used to create a client or server connection to the network. Users have the option of running a server node, or client. Server nodes host modules that users can interact with while clients utilize plugins that interact with the nodes.
 
 To get started download or build the application file. Use the commands below to get started.
 
@@ -59,11 +59,11 @@ Install node modules.
 Run the Build Process.
 `npm run build`
 
-### PlugIn Standards
+## PlugIn Standards
 
 Plugins are used to create processes to interact with network messages.
 
-#### File Structure
+### File Structure
 
 - `/src/modules/`
 - `/src/modules/core`

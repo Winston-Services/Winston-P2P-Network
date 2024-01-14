@@ -1,12 +1,10 @@
 import { v4 } from "uuid";
 import { WebSocketServer } from "ws";
 import { argv } from "node:process";
-import { startClient } from "./client.js";
+import { formatText, startClient, textColors } from "./client.js";
 
 const connections = new Map();
-function formatText(txt) {
-  return `\u001b[1;33;34m${txt}\u001b[1;33;00m`;
-}
+
 function getConnectionId() {
   let id = v4();
   if (connections.has(id)) {
@@ -18,15 +16,11 @@ function getConnectionId() {
 
 function handleMessage(ws, client) {
   // console.log(ws, client);
-  console.log("server client : >\n", client.id);
+  console.log("server client : >\t", client.id);
   return (data) => {
-    // ws.emit(JSON.stringify({ data }));
-    //local conneections
-    console.log(data);
     connections.forEach((connection) => {
-      if (connection.id !== client.id) connection.ws.send(data.toString());
+      if (connection.id !== client.id) connection.ws.send(data);
     });
-    // console.log("received: %s", data);
   };
 }
 
@@ -36,24 +30,21 @@ async function startServer(port = 6969) {
     let clientId = getConnectionId();
     let client = connections.get(clientId);
     client.id = clientId;
+    ws.clientId = clientId;
     client.ws = ws;
     ws.on("error", console.error);
     ws.on("message", handleMessage(ws, client));
     ws.on("close", () => {
       connections.delete(clientId);
-      console.info(formatText("Client %s disconnected."), clientId);
-    });
-    // console.log(client);
-    console.info("Client %s connected.", clientId);
-    ws.on("open", () => {
-      console.log(formatText("A connection was opened by : %s"), clientId);
-      ws.send(JSON.stringify({ status: "connected", id: clientId }));
-      ws.emit(
-        "message",
-        JSON.stringify({ status: "client-connected", id: clientId })
+      console.info(
+        formatText("Client %s disconnected.", textColors.Red),
+        clientId
       );
     });
-    console.log(formatText("Client Connected : %s"), clientId);
+    console.log(
+      formatText("Client Connected : %s", textColors.Green),
+      clientId
+    );
   });
 }
 

@@ -3,7 +3,7 @@ import { textColors, formatText } from "../../client.js";
 async function handleSlashCommand(data, client, clients) {
   //load slashcommands
   if (data.startsWith("/test")) {
-    console.info("Testing Slash Command Handler.");
+    console.log("Testing Slash Command Handler.");
     client.send(JSON.stringify({ action: "test" }));
     clients.forEach((_client) => {
       if (_client.id !== _client.id)
@@ -28,15 +28,22 @@ export async function command(data, client, clients) {
   if (data === "test") {
     console.info(formatText("Test was successful.", textColors.Green));
   }
-  console.log(formatText(data, textColors.Yellow));
+  console.log("->" + formatText(data.toString(), textColors.Yellow));
   if (data.toString().startsWith("/")) {
     return handleSlashCommand(data, client, clients);
   }
 }
 
-export async function exec(clients, input) {
-  console.log(formatText("Core Started.", textColors.Green));
-  console.log(input.toString());
+export async function exec(clients, client, input) {
+  // console.log(formatText("Core Started.", textColors.Green));
+
+  try {
+    let cmd = JSON.parse(input);
+    if (cmd.action === "test") {
+      console.log("Test was successful.");
+    }
+  } catch (error) {}
+  //console.log(clients, client, input.toString());
   // handle console slash command interactions.
   /*
   clients.forEach((client) => {

@@ -53,10 +53,11 @@ export function formatText(txt, color = textColors.Cyan) {
   return `\u001b[1;33;${color}m${txt}\u001b[1;33;00m`;
 }
 
-async function handleInternalClientModules(data) {
+async function handleInternalClientModules(data, client) {
+  // console.log("handleInternalClientModules", data, client);
   if (loadedModules.hasOwnProperty("core")) {
     try {
-      loadedModules.core.exec(clients, data);
+      loadedModules.core.exec(clients, data, client);
     } catch (error) {
       console.error(error);
       throw Error("Invalid Core Start-Up.");
@@ -66,7 +67,7 @@ async function handleInternalClientModules(data) {
     let plugIns = Object.keys(loadedModules.plugIns);
     for (let plugInIndex = 0; plugInIndex < plugIns.length; plugInIndex++) {
       try {
-        loadedModules.plugIns[plugIns[plugInIndex]].exec(clients, data);
+        loadedModules.plugIns[plugIns[plugInIndex]].exec(clients, data, client);
       } catch (error) {
         console.trace(error);
       }
@@ -122,9 +123,13 @@ export function startClient(url = "ws://localhost:6969", proxy = false) {
     if (!proxy) ask(true, MyClient, clients);
   });
   MyClient.on("error", console.error);
-  MyClient.on("message", handleInternalClientModules);
+  MyClient.on(
+    "message",
+    handleInternalClientModules.bind(handleInternalClientModules, MyClient)
+  );
   MyClient.on("close", () => {
     console.info(formatText("Client Closed.", textColors.Red));
+    process.exit();
     // exec closures.
   });
   return MyClient;

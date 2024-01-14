@@ -1,9 +1,16 @@
-import { textColors, formatText, ask, loadedModules } from "../../client.js";
+import {
+  textColors,
+  formatText,
+  ask,
+  loadedModules,
+  startClient
+} from "../../client.js";
 
 async function handleSlashCommand(data, client, clients) {
   //load slashcommands
   if (data.startsWith("/test")) {
     console.log("Testing Slash Command Handler.");
+    console.log(client, clients);
     client.send(JSON.stringify({ action: "test" }));
     clients.forEach((_client) => {
       if (_client.id !== _client.id)
@@ -18,6 +25,7 @@ async function handleSlashCommand(data, client, clients) {
       if (_client.id !== _client.id)
         _client.send(JSON.stringify({ action: "message", content }));
     });
+    return;
   }
   if (data.startsWith("/plugins")) {
     console.log("** Winston P2P Core Plug-Ins **");
@@ -25,11 +33,10 @@ async function handleSlashCommand(data, client, clients) {
       console.log("Winston P2P Core Installed : ✅");
     }
     if (loadedModules.hasOwnProperty("plugIns")) {
-      console.log(
-        "Winston P2P Client Plug-Ins : %d",
-        Object.keys(loadedModules.plugIns).length
-      );
+      let plugIns = Object.keys(loadedModules.plugIns);
+      console.log("Winston P2P Client Plug-Ins : %d", plugIns.length);
     }
+    return;
     // console.log(loadedModules);
   }
   function connect(data, client, clients) {
@@ -44,7 +51,7 @@ async function handleSlashCommand(data, client, clients) {
 
 export const name = "Core";
 export const description = "Winston P2P Core";
-
+export const version = "0.0001";
 export async function command(data, client, clients) {
   if (data === "test") {
     console.info(formatText("Test was successful.", textColors.Green));

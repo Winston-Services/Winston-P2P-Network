@@ -55,6 +55,8 @@ export function formatText(txt, color = textColors.Cyan) {
 
 async function handleInternalClientModules(data, client) {
   // console.log("handleInternalClientModules", data, client);
+
+  console.log(data);
   if (loadedModules.hasOwnProperty("core")) {
     try {
       loadedModules.core.exec(clients, data, client);
@@ -77,9 +79,7 @@ async function handleInternalClientModules(data, client) {
 
 export function startClient(url = "ws://localhost:6969", proxy = false) {
   let MyClient = new WebSocket(url);
-  if (!clients.has(url)) {
-    clients.set(url, MyClient);
-  }
+
   MyClient.on("open", async () => {
     console.log(formatText("Connected to Winston.", textColors.Green));
     if (!loadedModules.hasOwnProperty("core")) {

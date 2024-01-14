@@ -52,6 +52,7 @@ function parseArgV() {
   let host;
   let port;
   let server = false;
+  let headless = false;
   let vals = argv.slice(2);
   for (let i = 0; i < vals.length; i++) {
     if (vals[i].toLowerCase().startsWith("host=")) {
@@ -64,18 +65,25 @@ function parseArgV() {
       server = Boolean(vals[i].substring("server=".length));
       // console.log("Testing : ", server);
     }
+    if (vals[i].toLowerCase().startsWith("headless")) {
+      headless = true;
+    }
   }
   return {
     host: host || "localhost",
     port: port || 6969,
-    server
+    server,
+    headless
   };
 }
 
 async function handleCommand() {
-  const { host, port, server } = parseArgV();
+  const { host, port, server, headless } = parseArgV();
   if (server) {
     startServer(port);
+    if (!headless) {
+      return startClient(`ws://${host}:${port}`);
+    }
   } else return startClient(`ws://${host}:${port}`);
 }
 

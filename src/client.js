@@ -4,7 +4,7 @@ import path from "path";
 import * as readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 
-let clients = new Map();
+let clients = [];
 export const loadedModules = {};
 export let textColors = {
   Gray: 30,
@@ -53,13 +53,46 @@ export function formatText(txt, color = textColors.Cyan) {
   return `\u001b[1;33;${color}m${txt}\u001b[1;33;00m`;
 }
 
-async function handleInternalClientModules(data, client) {
+async function handleInternalClientModules(clients, client, data) {
   // console.log("handleInternalClientModules", data, client);
-
-  console.log(data);
+  if (!loadedModules.hasOwnProperty("core")) {
+    console.log(formatText("Loading Winston Core PlugIns", textColors.Green));
+    const core = await import("./modules/core/index.js");
+    loadedModules.core = core;
+    console.log(formatText("Winston Core PlugIns Loaded", textColors.Cyan));
+  }
+  if (!loadedModules.hasOwnProperty("plugIns")) {
+    loadedModules.plugIns = {};
+    console.log(formatText("Loading Winston Client PlugIns", textColors.Green));
+    const plugInDirContents = fs.readdirSync(
+      path.resolve(`./src/modules/plugIn`)
+    );
+    // console.log(plugInDirContents);
+    for (let fileIndex = 0; fileIndex < plugInDirContents.length; fileIndex++) {
+      try {
+        console.log(
+          formatText("Loading Winston Client PlugIn : %s", textColors.Green),
+          formatText(plugInDirContents[fileIndex], textColors.White)
+        );
+        console.log("Adding Plug-In : %s", plugInDirContents[fileIndex]);
+        const plugIn = await import(
+          `./modules/plugIn/${plugInDirContents[fileIndex]}/index.js`
+        );
+        console.log("Plug-In Loaded", plugIn);
+        loadedModules.plugIns[plugInDirContents[fileIndex]] = plugIn;
+        console.log(
+          formatText("Winston Client PlugIn Loaded: %s", textColors.Cyan),
+          formatText(plugInDirContents[fileIndex], textColors.Green)
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    console.log(formatText("Winston Client PlugIns Loaded", textColors.Cyan));
+  }
   if (loadedModules.hasOwnProperty("core")) {
     try {
-      loadedModules.core.exec(clients, data, client);
+      loadedModules.core.exec(clients, client, data);
     } catch (error) {
       console.error(error);
       throw Error("Invalid Core Start-Up.");
@@ -69,7 +102,11 @@ async function handleInternalClientModules(data, client) {
     let plugIns = Object.keys(loadedModules.plugIns);
     for (let plugInIndex = 0; plugInIndex < plugIns.length; plugInIndex++) {
       try {
-        loadedModules.plugIns[plugIns[plugInIndex]].exec(clients, data, client);
+        await loadedModules.plugIns[plugIns[plugInIndex]].exec(
+          clients,
+          client,
+          data
+        );
       } catch (error) {
         console.trace(error);
       }
@@ -79,61 +116,26 @@ async function handleInternalClientModules(data, client) {
 
 export function startClient(url = "ws://localhost:6969", proxy = false) {
   let MyClient = new WebSocket(url);
+  clients.push(MyClient);
 
   MyClient.on("open", async () => {
     console.log(formatText("Connected to Winston.", textColors.Green));
-    if (!loadedModules.hasOwnProperty("core")) {
-      console.log(formatText("Loading Winston Core PlugIns", textColors.Green));
-      const core = await import("./modules/core/index.js");
-      loadedModules.core = core;
-      console.log(formatText("Winston Core PlugIns Loaded", textColors.Cyan));
-    }
-
-    if (!loadedModules.hasOwnProperty("plugIns")) {
-      loadedModules.plugIns = {};
-      console.log(
-        formatText("Loading Winston Client PlugIns", textColors.Green)
-      );
-      const plugInDirContents = fs.readdirSync(
-        path.resolve(`./src/modules/plugIn`)
-      );
-      // console.log(plugInDirContents);
-      for (
-        let fileIndex = 0;
-        fileIndex < plugInDirContents.length;
-        fileIndex++
-      ) {
-        try {
-          console.log(
-            formatText("Loading Winston Client PlugIn : %s", textColors.Green),
-            formatText(plugInDirContents[fileIndex], textColors.White)
-          );
-          console.log("Adding Plug-In : %s", plugInDirContents[fileIndex]);
-          const plugIn = await import(
-            `./modules/plugIn/${plugInDirContents[fileIndex]}/index.js`
-          );
-          console.log("Plug-In Loaded", plugIn);
-          loadedModules.plugIns[plugInDirContents[fileIndex]] = plugIn;
-          console.log(
-            formatText("Winston Client PlugIn Loaded: %s", textColors.Cyan),
-            formatText(plugInDirContents[fileIndex], textColors.Green)
-          );
-        } catch (error) {
-          console.log(error);
-        }
-      }
-      console.log(formatText("Winston Client PlugIns Loaded", textColors.Cyan));
-    }
     if (!proxy) ask(true, MyClient, clients);
   });
   MyClient.on("error", console.error);
   MyClient.on(
     "message",
-    handleInternalClientModules.bind(handleInternalClientModules, MyClient)
+    handleInternalClientModules.bind(
+      handleInternalClientModules,
+      clients,
+      MyClient
+    )
   );
   MyClient.on("close", () => {
     console.info(formatText("Client Closed.", textColors.Red));
-    process.exit();
+    clients = clients.filter((client) => client !== MyClient);
+    if (clients.length < 1) process.exit();
+
     // exec closures.
   });
   return MyClient;

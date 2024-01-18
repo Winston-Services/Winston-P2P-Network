@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 import { argv } from "node:process";
 import { formatText, startClient, textColors } from "./client.js";
 
@@ -14,12 +14,14 @@ function getConnectionId() {
   return id;
 }
 
-function handleMessage(ws, client) {
-  // console.log(ws, client);
-  console.log("server client : >\t", client.id);
+function handleMessage(wss, client) {
   return (data) => {
-    connections.forEach((connection) => {
-      if (connection.id !== client.id) connection.ws.send(data);
+    wss.clients.forEach(function each(ws) {
+      if (ws.readyState === WebSocket.OPEN) {
+        if (ws.clientId !== client.ws.clientId) {
+          ws.send(data);
+        }
+      }
     });
   };
 }
@@ -33,7 +35,8 @@ async function startServer(port = 6969) {
     ws.clientId = clientId;
     client.ws = ws;
     ws.on("error", console.error);
-    ws.on("message", handleMessage(ws, client));
+    ws.on("message", handleMessage(wss, client));
+
     ws.on("close", () => {
       connections.delete(clientId);
       console.info(
@@ -45,6 +48,7 @@ async function startServer(port = 6969) {
       formatText("Client Connected : %s", textColors.Green),
       clientId
     );
+    ws.send(JSON.stringify({ status: "connected", clientId }));
   });
 }
 
